@@ -1,2 +1,5 @@
 fastapi==0.115.4
 uvicorn[standard]
+opencv-python-headless==4.10.0.84
+tqdm==4.67.0
+json-tricks==3.17.3
