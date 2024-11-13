@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request
-from mmseg.apis import inference_model, init_model, show_result_pyplot
+from models.funcs import load_model, inference_model
 
 router = APIRouter()
+
 
 @router.post('/sapiens')
 async def sapiens_func(request: Request):
