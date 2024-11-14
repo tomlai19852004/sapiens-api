@@ -15,9 +15,13 @@ import codecs
 import torch
 import torch.nn.functional as F
 import torchvision
+import base64
+import numba as nb
+
 from .adhoc_image_dataset import AdhocImageDataset
 from .classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE
-from tqdm import tqdm
+from PIL import Image
+
 
 # from worker_pool import WorkerPool
 
@@ -41,6 +45,21 @@ def inference_model(model, imgs, dtype=torch.bfloat16):
 
     return results
 
+# Tryon mode
+@nb.njit
+def replace_where(arr, needle, replace):
+    arr = arr.ravel()
+    needles = set(needle)
+    for idx in range(arr.size):
+        if arr[idx] in needles:
+            arr[idx] = replace
+
+def encode_img_to_base64(img):
+    img_encode = cv2.imencode('.png', img)[1]
+    img_bytes = img_encode.tobytes()
+    base64_img = base64.b64encode(img_bytes)
+    return base64_img
+
 def generate_image_mask(image, result, threshold=0.3):
     image = image.data.numpy() ## bgr image
 
@@ -57,8 +76,18 @@ def generate_image_mask(image, result, threshold=0.3):
     pred_sem_seg = pred_sem_seg.data[0].numpy()
 
     mask = pred_sem_seg > 0
-    return codecs.encode(pickle.dumps(mask, protocol=pickle.HIGHEST_PROTOCOL), "base64").decode('latin1')
 
+    white_map = np.array([2,4,5,6,7,10,11,13,14,15,16,19,20,21])
+    black_map = np.array([1,3,8,9,12,17,18,22,23,24,25,26,27])
+
+    replace_where(mask, white_map, 255)
+    replace_where(mask, black_map, 0)
+
+    img_array = mask.astype(np.uint8)
+    img = Image.fromarray(img_array)
+    return encode_img_to_base64(img)
+
+    
 def img_save_and_viz(
     image, result, output_path, classes, palette, title=None, opacity=0.5, threshold=0.3, 
 ):
