@@ -113,7 +113,7 @@ def process_image_into_dataset(img_file):
         inf_dataset,
         batch_size=os.getenv('BATCH_SIZE', 4),
         shuffle=False,
-        num_workers=max(min(os.getenv('BATCH_SIZE', 4), cpu_count()), 1) if torch.cuda.is_available() else 1,
+        num_workers=max(min(int(os.getenv('BATCH_SIZE', 4)), cpu_count()), 1) if torch.cuda.is_available() else 1,
     )
 
     return inf_dataset, inf_dataloader
