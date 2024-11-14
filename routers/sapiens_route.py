@@ -32,9 +32,7 @@ router = APIRouter()
 @router.post('/sapiens-seg-img')
 async def sapiens_func(file: UploadFile):
     global model
-    # if not img_data:
-    #     raise HTTPException(status_code=400, detail='Missing required parameter.')
-
+    
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail='Missing required parameter.')
     contents = await file.read()
@@ -47,14 +45,13 @@ async def sapiens_func(file: UploadFile):
         enumerate(inf_dataloader), total=len(inf_dataloader)
     ):
         valid_images_len = len( batch_imgs )
-        print( len(batch_imgs))
         batch_imgs = fake_pad_images_to_batchsize( batch_imgs )
-        print( len(batch_imgs))
-
+        
         result = inference_model( model, batch_imgs, dtype=dtype )
 
-        print( type( result ) )
-        print( result )
+        print( batch_imgs.shape )
+        print( result.shape )
+
     
     payload = {'result': "this is your result."}
     return payload
