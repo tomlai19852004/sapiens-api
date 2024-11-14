@@ -13,11 +13,11 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torchvision
-from adhoc_image_dataset import AdhocImageDataset
-from classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE
+from .adhoc_image_dataset import AdhocImageDataset
+from .classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE
 from tqdm import tqdm
 
-from worker_pool import WorkerPool
+# from worker_pool import WorkerPool
 
 torchvision.disable_beta_transforms_warning()
 
@@ -26,8 +26,12 @@ BATCH_SIZE = 32
 
 
 def inference_model(model, imgs, dtype=torch.bfloat16):
+    print( type( imgs ) )
     with torch.no_grad():
-        results = model(imgs.to(dtype).cuda())
+        if torch.cuda.is_available():
+            results = model(imgs.to(dtype).cuda())
+        else:
+            results = model(imgs.to(dtype))
         imgs.cpu()
 
     results = [r.cpu() for r in results]
@@ -95,3 +99,22 @@ def load_model(checkpoint, use_torchscript=False):
         return torch.jit.load(checkpoint)
     else:
         return torch.export.load(checkpoint).module()
+    
+
+def process_image_into_dataset(img_file):
+    inf_dataset = AdhocImageDataset(
+        [img_file], 
+        (1024,768),
+        mean=[123.5, 116.5, 103.5],
+        std=[58.5, 57.0, 57.5],
+        )
+    
+    inf_dataloader = torch.utils.data.DataLoader(
+        inf_dataset,
+        batch_size=os.getenv('BATCH_SIZE', 4),
+        shuffle=False
+        # ,
+        # num_workers=max(min(os.getenv('BATCH_SIZE', 4), cpu_count()), 1) if torch.cuda.is_available() else 1,
+    )
+
+    return inf_dataset, inf_dataloader

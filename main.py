@@ -24,4 +24,4 @@ if __name__ == "__main__":
 
     port = arg_dict.get('--port', 8000)
     host = arg_dict.get('--host', '0.0.0.0')
-    uvicorn.run(app, host=host, port=int(port))
+    uvicorn.run('main:app', host=host, port=int(port), reload=True)

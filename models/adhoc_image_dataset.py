@@ -6,6 +6,8 @@
 
 import torch
 import cv2
+import starlette
+import numpy as np
 
 class AdhocImageDataset(torch.utils.data.Dataset):
     def __init__(self, image_list, shape=None, mean=None, std=None):
@@ -35,9 +37,27 @@ class AdhocImageDataset(torch.utils.data.Dataset):
         return img
     
     def __getitem__(self, idx):
-        orig_img_dir = self.image_list[idx]
-        orig_img = cv2.imread(orig_img_dir)
-        # orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
-        img = self._preprocess(orig_img)
-        return orig_img_dir, orig_img, img
+
+        # print(type('test reload') == str)
+        # print( type( img_data ) == bytes )
+        print( type(self.image_list[idx]) )
+        print( type(self.image_list[idx]) == bytes )
+        if type(self.image_list[idx]) == bytes:
+            print( 'running upload file')
+            
+            contents = self.image_list[idx]
+            # print( len(contents ))
+            nparr = np.fromstring(contents, np.uint8)
+            orig_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            img = self._preprocess(orig_img)
+            return idx, orig_img, img
+        elif type(self.image_list[idx]) == str:
+            orig_img_dir = self.image_list[idx]
+            orig_img = cv2.imread(orig_img_dir)
+            # orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
+            img = self._preprocess(orig_img)
+            return orig_img_dir, orig_img, img
+        else:
+            raise Exception        
+        
         
