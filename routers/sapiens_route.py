@@ -49,9 +49,8 @@ async def sapiens_func(file: UploadFile):
         
         result = inference_model( model, batch_imgs, dtype=dtype )
 
-        print( batch_imgs.shape )
-        print( result.shape )
-
+        print( len(batch_orig_imgs))
+        print( len(result))
     
     payload = {'result': "this is your result."}
     return payload
