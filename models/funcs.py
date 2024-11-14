@@ -44,6 +44,24 @@ def fake_pad_images_to_batchsize(imgs):
     return F.pad(imgs, (0, 0, 0, 0, 0, 0, 0, BATCH_SIZE - imgs.shape[0]), value=0)
 
 
+def generate_image_mask(image, result, threshold=0.3):
+    classes = GOLIATH_CLASSES
+    palette = GOLIATH_PALETTE
+
+    image = image.data.numpy()
+    seg_logits = F.interpolate(
+        result.unsqueeze(0), size=image.shape[:2], mode="bilinear"
+    ).squeeze(0)
+
+    if seg_logits.shape[0] > 1:
+        pred_sem_seg = seg_logits.argmax(dim=0, keepdim=True)
+    else:
+        seg_logits = seg_logits.sigmoid()
+        pred_sem_seg = (seg_logits > threshold).to(seg_logits)
+
+
+    num_classes = len(GOLIATH_CLASSES)
+
 def img_save_and_viz(
     image, result, output_path, classes, palette, title=None, opacity=0.5, threshold=0.3, 
 ):

@@ -1,12 +1,14 @@
 from typing import Annotated
 from fastapi import APIRouter, File, HTTPException, UploadFile
-import starlette
 from tqdm import tqdm
+from models.classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE
+
+
 import os
 import torch
 
 from models.funcs import load_model, inference_model, process_image_into_dataset, \
-                        fake_pad_images_to_batchsize
+                        fake_pad_images_to_batchsize, img_save_and_viz
 
 checkpoint = os.getenv('CHECKPOINT')
 use_torchscript = os.getenv('MODE', '').lower() == 'torchscript'
@@ -27,6 +29,9 @@ else:
     model = model.to(DEVICE)
 
 router = APIRouter()
+
+
+
 
 # img_data: Annotated[bytes, File(description="A file read as bytes")]
 @router.post('/sapiens-seg-img')
@@ -51,6 +56,13 @@ async def sapiens_func(file: UploadFile):
 
         print( len(batch_orig_imgs))
         print( len(result))
-    
+        print( os.path.join('results', os.path.basename(file.filename)) )
+
+        # img_save_and_viz(
+        #     batch_orig_imgs[0], 
+        #     result[0], 
+            
+        #     )
+
     payload = {'result': "this is your result."}
     return payload
