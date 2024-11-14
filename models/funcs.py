@@ -10,6 +10,8 @@ from typing import Union
 
 import cv2
 import numpy as np
+import pickle
+import codecs
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -39,16 +41,9 @@ def inference_model(model, imgs, dtype=torch.bfloat16):
 
     return results
 
-
-def fake_pad_images_to_batchsize(imgs):
-    return F.pad(imgs, (0, 0, 0, 0, 0, 0, 0, BATCH_SIZE - imgs.shape[0]), value=0)
-
-
 def generate_image_mask(image, result, threshold=0.3):
-    classes = GOLIATH_CLASSES
-    palette = GOLIATH_PALETTE
+    image = image.data.numpy() ## bgr image
 
-    image = image.data.numpy()
     seg_logits = F.interpolate(
         result.unsqueeze(0), size=image.shape[:2], mode="bilinear"
     ).squeeze(0)
@@ -59,8 +54,10 @@ def generate_image_mask(image, result, threshold=0.3):
         seg_logits = seg_logits.sigmoid()
         pred_sem_seg = (seg_logits > threshold).to(seg_logits)
 
+    pred_sem_seg = pred_sem_seg.data[0].numpy()
 
-    num_classes = len(GOLIATH_CLASSES)
+    mask = pred_sem_seg > 0
+    return codecs.encode(pickle.dumps(mask, protocol=pickle.HIGHEST_PROTOCOL), "base64").decode('latin1')
 
 def img_save_and_viz(
     image, result, output_path, classes, palette, title=None, opacity=0.5, threshold=0.3, 

@@ -8,7 +8,7 @@ import os
 import torch
 
 from models.funcs import load_model, inference_model, process_image_into_dataset, \
-                        fake_pad_images_to_batchsize, img_save_and_viz
+                        fake_pad_images_to_batchsize, generate_image_mask, img_save_and_viz
 
 checkpoint = os.getenv('CHECKPOINT')
 use_torchscript = os.getenv('MODE', '').lower() == 'torchscript'
@@ -45,26 +45,28 @@ async def sapiens_func(file: UploadFile):
 
     total_results = []
     image_paths = []
+    payload = {'img_mask': None}
 
     for batch_idx, (batch_image_name, batch_orig_imgs, batch_imgs) in tqdm(
         enumerate(inf_dataloader), total=len(inf_dataloader)
     ):
         valid_images_len = len( batch_imgs )
-        # batch_imgs = fake_pad_images_to_batchsize( batch_imgs )
         
         result = inference_model( model, batch_imgs, dtype=dtype )
 
-        print( len(batch_orig_imgs))
-        print( len(result))
-        print( os.path.join('results', os.path.basename(file.filename)) )
+        # print( len(batch_orig_imgs))
+        # print( len(result))
+        # print( os.path.join('results', os.path.basename(file.filename)) )
 
-        img_save_and_viz(
-            batch_orig_imgs[0], 
-            result[0], 
-            os.path.join('results', os.path.basename(file.filename)),
-            GOLIATH_CLASSES,
-            GOLIATH_PALETTE
-            )
+        # img_save_and_viz(
+        #     batch_orig_imgs[0], 
+        #     result[0], 
+        #     os.path.join('results', os.path.basename(file.filename)),
+        #     GOLIATH_CLASSES,
+        #     GOLIATH_PALETTE
+        #     )
+        img_mask = generate_image_mask(batch_orig_imgs[0], result[0])
+        payload['img_mask'] = img_mask
 
-    payload = {'result': "this is your result."}
+    
     return payload
