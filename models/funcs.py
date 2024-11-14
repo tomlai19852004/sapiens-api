@@ -22,11 +22,12 @@ from tqdm import tqdm
 torchvision.disable_beta_transforms_warning()
 
 timings = {}
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 
 
 def inference_model(model, imgs, dtype=torch.bfloat16):
     print( type( imgs ) )
+    torch.cuda.empty_cache()
     with torch.no_grad():
         if torch.cuda.is_available():
             results = model(imgs.to(dtype).cuda())
