@@ -84,7 +84,8 @@ def generate_image_mask(image, result, threshold=0.3):
     replace_where(mask, black_map, 0)
 
     img_array = mask.astype(np.uint8)
-    # img = Image.fromarray(img_array)
+    img = Image.fromarray(img_array)
+    img.save('results/api-debug.png')
     return encode_img_to_base64(img_array)
 
     
