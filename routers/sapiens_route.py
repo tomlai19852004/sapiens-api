@@ -23,6 +23,7 @@ if not use_torchscript:
 else:
     dtype = torch.float32  # TorchScript models use float32
     DEVICE = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    print('Device is {}'.format(DEVICE))
     model = model.to(DEVICE)
 
 router = APIRouter()
