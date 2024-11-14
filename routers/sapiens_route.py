@@ -58,11 +58,13 @@ async def sapiens_func(file: UploadFile):
         print( len(result))
         print( os.path.join('results', os.path.basename(file.filename)) )
 
-        # img_save_and_viz(
-        #     batch_orig_imgs[0], 
-        #     result[0], 
-            
-        #     )
+        img_save_and_viz(
+            batch_orig_imgs[0], 
+            result[0], 
+            os.path.join('results', os.path.basename(file.filename)),
+            GOLIATH_CLASSES,
+            GOLIATH_PALETTE
+            )
 
     payload = {'result': "this is your result."}
     return payload
