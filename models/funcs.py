@@ -60,7 +60,7 @@ def encode_img_to_base64(img):
     base64_img = base64.b64encode(img_bytes)
     return base64_img
 
-def generate_image_mask(image, result, threshold=0.3):
+def generate_image_mask(image, result, classes, palette, threshold=0.3):
     image = image.data.numpy() ## bgr image
 
     seg_logits = F.interpolate(
@@ -82,10 +82,10 @@ def generate_image_mask(image, result, threshold=0.3):
     white_map = np.array([2,4,5,6,7,10,11,13,14,15,16,19,20,21])
     black_map = np.array([1,3,8,9,12,17,18,22,23,24,25,26,27])
 
-    replace_where(mask, white_map, 255)
-    replace_where(mask, black_map, 0)
+    replace_where(pred_sem_seg, white_map, 255)
+    replace_where(pred_sem_seg, black_map, 0)
 
-    img_array = mask.astype(np.uint8)
+    img_array = pred_sem_seg.astype(np.uint8)
     img = Image.fromarray(img_array)
     img.save('results/api-debug.png')
     return encode_img_to_base64(img_array)

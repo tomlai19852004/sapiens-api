@@ -65,7 +65,7 @@ async def sapiens_func(file: UploadFile):
         #     GOLIATH_CLASSES,
         #     GOLIATH_PALETTE
         #     )
-        img_mask = generate_image_mask(batch_orig_imgs[0], result[0])
+        img_mask = generate_image_mask(batch_orig_imgs[0], result[0], GOLIATH_CLASSES, GOLIATH_PALETTE)
         payload['img_mask'] = img_mask
 
     
