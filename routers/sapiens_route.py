@@ -45,7 +45,7 @@ async def sapiens_func(file: UploadFile):
         enumerate(inf_dataloader), total=len(inf_dataloader)
     ):
         valid_images_len = len( batch_imgs )
-        batch_imgs = fake_pad_images_to_batchsize( batch_imgs )
+        # batch_imgs = fake_pad_images_to_batchsize( batch_imgs )
         
         result = inference_model( model, batch_imgs, dtype=dtype )
 
