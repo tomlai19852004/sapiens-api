@@ -8,7 +8,7 @@ import os
 import torch
 
 from models.funcs import load_model, inference_model, process_image_into_dataset, \
-                        fake_pad_images_to_batchsize, generate_image_mask, img_save_and_viz
+                        generate_image_mask, img_save_and_viz
 
 checkpoint = os.getenv('CHECKPOINT')
 use_torchscript = os.getenv('MODE', '').lower() == 'torchscript'
