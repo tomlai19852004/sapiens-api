@@ -78,10 +78,10 @@ async def websocket_endpoint(websocket: WebSocket):
                 img_mask = generate_image_mask(batch_orig_imgs[0], result[0], 
                                             GOLIATH_CLASSES, GOLIATH_PALETTE)
                 
-                img_str = encode_img_to_base64(img_mask)
+                # img_str = encode_img_to_base64(img_mask)
                 
                 # Send processed frame back to client
-                await websocket.send_text(f"data:image/jpeg;base64,{img_str}")
+                await websocket.send_text(f"data:image/png;base64,{img_mask}")
                 
     except Exception as e:
         print(f"Error in websocket connection: {str(e)}")
