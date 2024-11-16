@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket
 from tqdm import tqdm
 from models.classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE
 
@@ -8,7 +8,7 @@ import os
 import torch
 
 from models.funcs import load_model, inference_model, process_image_into_dataset, \
-                        generate_image_mask, img_save_and_viz
+                        generate_image_mask, decode_base64_to_img, encode_img_to_base64
 
 checkpoint = os.getenv('CHECKPOINT')
 use_torchscript = os.getenv('MODE', '').lower() == 'torchscript'
@@ -33,7 +33,7 @@ router = APIRouter()
 
 
 
-# img_data: Annotated[bytes, File(description="A file read as bytes")]
+# Image segmentation for a single image
 @router.post('/sapiens-seg-img')
 async def sapiens_func(file: UploadFile):
     global model
@@ -43,8 +43,6 @@ async def sapiens_func(file: UploadFile):
     contents = await file.read()
     inf_dataset, inf_dataloader = process_image_into_dataset(contents)
 
-    total_results = []
-    image_paths = []
     payload = {'img_mask': None}
 
     for batch_idx, (batch_image_name, batch_orig_imgs, batch_imgs) in tqdm(
@@ -53,20 +51,38 @@ async def sapiens_func(file: UploadFile):
         valid_images_len = len( batch_imgs )
         
         result = inference_model( model, batch_imgs, dtype=dtype )
-
-        # print( len(batch_orig_imgs))
-        # print( len(result))
-        # print( os.path.join('results', os.path.basename(file.filename)) )
-
-        # img_save_and_viz(
-        #     batch_orig_imgs[0], 
-        #     result[0], 
-        #     os.path.join('results', os.path.basename(file.filename)),
-        #     GOLIATH_CLASSES,
-        #     GOLIATH_PALETTE
-        #     )
         img_mask = generate_image_mask(batch_orig_imgs[0], result[0], GOLIATH_CLASSES, GOLIATH_PALETTE)
         payload['img_mask'] = img_mask
 
     
     return payload
+
+
+@router.websocket("/sapiens-seg-stream")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    
+    try:
+        while True:
+            # Receive base64 encoded frame from client
+            data = await websocket.receive_text()
+            
+            frame = decode_base64_to_img(data)
+            
+            # Process frame using existing pipeline
+            inf_dataset, inf_dataloader = process_image_into_dataset(frame)
+            
+            for _, (_, batch_orig_imgs, batch_imgs) in enumerate(inf_dataloader):
+                result = inference_model(model, batch_imgs, dtype=dtype)
+                img_mask = generate_image_mask(batch_orig_imgs[0], result[0], 
+                                            GOLIATH_CLASSES, GOLIATH_PALETTE)
+                
+                img_str = encode_img_to_base64(img_mask)
+                
+                # Send processed frame back to client
+                await websocket.send_text(f"data:image/jpeg;base64,{img_str}")
+                
+    except Exception as e:
+        print(f"Error in websocket connection: {str(e)}")
+    finally:
+        await websocket.close()

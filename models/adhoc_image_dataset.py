@@ -40,11 +40,8 @@ class AdhocImageDataset(torch.utils.data.Dataset):
 
         # print(type('test reload') == str)
         # print( type( img_data ) == bytes )
-        print( type(self.image_list[idx]) )
-        print( type(self.image_list[idx]) == bytes )
+        
         if type(self.image_list[idx]) == bytes:
-            print( 'running upload file')
-            
             contents = self.image_list[idx]
             # print( len(contents ))
             nparr = np.fromstring(contents, np.uint8)

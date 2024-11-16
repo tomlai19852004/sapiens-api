@@ -90,58 +90,6 @@ def generate_image_mask(image, result, classes, palette, threshold=0.3):
     img.save('results/api-debug.png')
     return encode_img_to_base64(img_array)
 
-    
-def img_save_and_viz(
-    image, result, output_path, classes, palette, title=None, opacity=0.5, threshold=0.3, 
-):
-    output_file = (
-        output_path.replace(".jpg", ".png")
-        .replace(".jpeg", ".png")
-        .replace(".png", ".npy")
-    )
-    output_seg_file = (
-        output_path.replace(".jpg", ".png")
-        .replace(".jpeg", ".png")
-        .replace(".png", "_seg.npy")
-    )
-
-    image = image.data.numpy() ## bgr image
-
-    seg_logits = F.interpolate(
-        result.unsqueeze(0), size=image.shape[:2], mode="bilinear"
-    ).squeeze(0)
-
-    if seg_logits.shape[0] > 1:
-        pred_sem_seg = seg_logits.argmax(dim=0, keepdim=True)
-    else:
-        seg_logits = seg_logits.sigmoid()
-        pred_sem_seg = (seg_logits > threshold).to(seg_logits)
-
-    pred_sem_seg = pred_sem_seg.data[0].numpy()
-
-    mask = pred_sem_seg > 0
-    np.save(output_file, mask)
-    np.save(output_seg_file, pred_sem_seg)
-
-    num_classes = len(classes)
-    sem_seg = pred_sem_seg
-    ids = np.unique(sem_seg)[::-1]
-    legal_indices = ids < num_classes
-    ids = ids[legal_indices]
-    labels = np.array(ids, dtype=np.int64)
-
-    colors = [palette[label] for label in labels]
-
-    mask = np.zeros_like(image)
-    for label, color in zip(labels, colors):
-        mask[sem_seg == label, :] = color
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    vis_image = (image_rgb * (1 - opacity) + mask * opacity).astype(np.uint8)
-
-    vis_image = cv2.cvtColor(vis_image, cv2.COLOR_RGB2BGR)
-    vis_image = np.concatenate([image, vis_image], axis=1)
-    cv2.imwrite(output_path, vis_image)
-
 def load_model(checkpoint, use_torchscript=False):
     if use_torchscript:
         return torch.jit.load(checkpoint)
@@ -166,3 +114,16 @@ def process_image_into_dataset(img_file):
     )
 
     return inf_dataset, inf_dataloader
+
+def decode_base64_to_img(data):
+    # Decode base64 string to image
+    img_bytes = base64.b64decode(data.split(',')[1])
+    nparr = np.frombuffer(img_bytes, np.uint8)
+    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    return frame
+
+def encode_img_to_base64(img_mask):
+    # Encode processed image back to base64
+    _, buffer = cv2.imencode('.jpg', img_mask)
+    img_str = base64.b64encode(buffer).decode('utf-8')
+    return img_str
