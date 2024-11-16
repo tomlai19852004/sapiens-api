@@ -118,9 +118,10 @@ def process_image_into_dataset(img_file):
 def decode_base64_to_img(data):
     # Decode base64 string to image
     img_bytes = base64.b64decode(data.split(',')[1])
-    nparr = np.frombuffer(img_bytes, np.uint8)
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    return frame
+    return img_bytes
+    # nparr = np.frombuffer(img_bytes, np.uint8)
+    # frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    # return frame
 
 def encode_img_to_base64(img_mask):
     # Encode processed image back to base64
