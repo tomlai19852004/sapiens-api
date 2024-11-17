@@ -56,6 +56,8 @@ async def sapiens_func(file: UploadFile, ctp: list | None = None):
     classes_to_select = ctp if ctp else skin_classes
     # classes_to_select = skin_classes
 
+    print('debug ctp')
+    print( ctp )
     print('debug classes to select')
     print( classes_to_select )
 
