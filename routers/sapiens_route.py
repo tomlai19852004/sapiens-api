@@ -33,7 +33,7 @@ router = APIRouter()
 
 # Image segmentation for a single image
 @router.post('/sapiens-seg-img')
-async def sapiens_func(file: UploadFile, ctp:Optional[list] = Form(None)):
+async def sapiens_func(file: UploadFile, ctp: list | None = None):
     global model
     
     skin_classes = [2,4,5,6,7,10,11,13,14,15,16,19,20,21]
