@@ -1,5 +1,5 @@
-from typing import Annotated, Optional
-from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket
+from typing import Annotated
+from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket, Form
 from tqdm import tqdm
 from models.classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE
 
@@ -33,11 +33,11 @@ router = APIRouter()
 
 # Image segmentation for a single image
 @router.post('/sapiens-seg-img')
-async def sapiens_func(file: UploadFile, ctp: Optional[list]):
+async def sapiens_func(file: UploadFile, ctp: Annotated[list, Form(default=[2,4,5,6,7,10,11,13,14,15,16,19,20,21])]):
     global model
     
-    skin_classes = [2,4,5,6,7,10,11,13,14,15,16,19,20,21]
-    classes_to_select = ctp if ctp else skin_classes
+    # skin_classes = [2,4,5,6,7,10,11,13,14,15,16,19,20,21]
+    classes_to_select = ctp
 
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail='Missing required parameter.')
