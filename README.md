@@ -17,3 +17,9 @@ pytorch==2.5.1
 torchvision==0.20.1
 torchaudio==2.5.1
 ```
+
+
+Running the API server via gunicorn
+```
+gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --daemon
+```

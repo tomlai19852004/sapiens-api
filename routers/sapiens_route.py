@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket
 from tqdm import tqdm
 from models.classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE
@@ -31,13 +31,14 @@ else:
 router = APIRouter()
 
 
-
-
 # Image segmentation for a single image
 @router.post('/sapiens-seg-img')
-async def sapiens_func(file: UploadFile):
+async def sapiens_func(file: UploadFile, ctp: Optional[list]):
     global model
     
+    skin_classes = [2,4,5,6,7,10,11,13,14,15,16,19,20,21]
+    classes_to_select = ctp if ctp else skin_classes
+
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail='Missing required parameter.')
     contents = await file.read()
@@ -51,12 +52,28 @@ async def sapiens_func(file: UploadFile):
         valid_images_len = len( batch_imgs )
         
         result = inference_model( model, batch_imgs, dtype=dtype )
-        img_mask = generate_image_mask(batch_orig_imgs[0], result[0], GOLIATH_CLASSES, GOLIATH_PALETTE)
+        img_mask = generate_image_mask(batch_orig_imgs[0], result[0], classes_to_select)
         payload['img_mask'] = img_mask
 
     
     return payload
 
+
+@router.post('/sapiens-test')
+async def sapiens_test_func():
+    suitable_classes = []
+    not_suitable_classes = []
+    for ii, gc in enumerate(GOLIATH_CLASSES):
+        if ii in [2,4,5,6,7,10,11,13,14,15,16,19,20,21]:
+            suitable_classes.append(gc)
+        else:
+            not_suitable_classes.append(gc)
+    return {
+        # 'classes': GOLIATH_CLASSES,
+        # 'palette': GOLIATH_PALETTE
+        'suitable_classes': suitable_classes,
+        'not_suitable_classes': not_suitable_classes
+    }    
 
 @router.websocket("/sapiens-seg-stream")
 async def websocket_endpoint(websocket: WebSocket):
@@ -87,3 +104,4 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"Error in websocket connection: {str(e)}")
     finally:
         await websocket.close()
+

@@ -60,7 +60,20 @@ def encode_img_to_base64(img):
     base64_img = base64.b64encode(img_bytes)
     return base64_img
 
-def generate_image_mask(image, result, classes, palette, threshold=0.3):
+
+def generate_mask_color(classes_to_select):
+    white_map_class_index = []
+    black_map_class_index = []
+    for ii, this_class in enumerate(GOLIATH_CLASSES):
+        if this_class in classes_to_select:
+            white_map_class_index.append(ii)
+        else:
+            black_map_class_index.append(ii)
+
+    return np.array(white_map_class_index), np.array(black_map_class_index)
+    
+
+def generate_image_mask(image, result, classes, threshold=0.3):
     image = image.data.numpy() ## bgr image
 
     seg_logits = F.interpolate(
@@ -79,8 +92,9 @@ def generate_image_mask(image, result, classes, palette, threshold=0.3):
     mask = pred_sem_seg > 0
     # print( mask.shape )
 
-    white_map = np.array([2,4,5,6,7,10,11,13,14,15,16,19,20,21])
-    black_map = np.array([1,3,8,9,12,17,18,22,23,24,25,26,27])
+    # white_map = np.array([2,4,5,6,7,10,11,13,14,15,16,19,20,21])
+    # black_map = np.array([1,3,8,9,12,17,18,22,23,24,25,26,27])
+    white_map, black_map = generate_mask_color(classes)
 
     replace_where(pred_sem_seg, white_map, 255)
     replace_where(pred_sem_seg, black_map, 0)
