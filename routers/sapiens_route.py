@@ -36,7 +36,23 @@ router = APIRouter()
 async def sapiens_func(file: UploadFile, ctp: list | None = None):
     global model
     
-    skin_classes = [2,4,5,6,7,10,11,13,14,15,16,19,20,21]
+    # skin_classes = [2,4,5,6,7,10,11,13,14,15,16,19,20,21]
+    skin_classes = [
+        "Face_Neck",
+        "Left_Foot",
+        "Left_Hand",
+        "Left_Lower_Arm",
+        "Left_Lower_Leg",
+        "Left_Upper_Arm",
+        "Left_Upper_Leg",
+        "Right_Foot",
+        "Right_Hand",
+        "Right_Lower_Arm",
+        "Right_Lower_Leg",
+        "Right_Upper_Arm",
+        "Right_Upper_Leg",
+        "Torso"
+    ]
     classes_to_select = ctp if ctp else skin_classes
     # classes_to_select = skin_classes
 
