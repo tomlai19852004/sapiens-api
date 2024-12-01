@@ -46,7 +46,7 @@ async def sapiens_func(
         classes_to_select = ctp
     else:
         # default to skin classes
-        classes_to_select = ctp if ctp else class_templates.get('skin')
+        classes_to_select = ctp if ctp else class_templates.get('skin_classes')
 
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail='Missing required parameter.')
