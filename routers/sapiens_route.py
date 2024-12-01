@@ -1,7 +1,7 @@
 from typing import Annotated, Optional, List, Dict, Any
 from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket, Form
 from tqdm import tqdm
-from models.classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE
+from models.classes_and_palettes import GOLIATH_CLASSES, GOLIATH_PALETTE, class_templates
 
 
 import os
@@ -35,34 +35,18 @@ router = APIRouter()
 @router.post('/sapiens-seg-img')
 async def sapiens_func(
     file: UploadFile, 
-    ctp: Optional[List[str]] = Form(None)
+    ctp: Optional[List[str]] = Form(None),
+    class_template: Optional[str] = Form(None)
     ) -> Dict[str, Any]:
     global model
     
-    # skin_classes = [2,4,5,6,7,10,11,13,14,15,16,19,20,21]
-    skin_classes = [
-        "Face_Neck",
-        "Left_Foot",
-        "Left_Hand",
-        "Left_Lower_Arm",
-        "Left_Lower_Leg",
-        "Left_Upper_Arm",
-        "Left_Upper_Leg",
-        "Right_Foot",
-        "Right_Hand",
-        "Right_Lower_Arm",
-        "Right_Lower_Leg",
-        "Right_Upper_Arm",
-        "Right_Upper_Leg",
-        "Torso"
-    ]
-    classes_to_select = ctp if ctp else skin_classes
-    # classes_to_select = skin_classes
-
-    print('debug ctp')
-    print( ctp )
-    print('debug classes to select')
-    print( classes_to_select )
+    if class_template:
+        classes_to_select = class_templates.get(class_template)
+    elif ctp:
+        classes_to_select = ctp
+    else:
+        # default to skin classes
+        classes_to_select = ctp if ctp else class_templates.get('skin')
 
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail='Missing required parameter.')
@@ -85,20 +69,21 @@ async def sapiens_func(
 
 
 @router.post('/sapiens-test')
-async def sapiens_test_func(file: UploadFile, ctp: Optional[List[str]] = Form(None)):
+async def sapiens_test_func(
+    file: UploadFile, 
+    ctp: Optional[List[str]] = Form(None),
+    class_template: Optional[str] = Form(None)
+    ):
     print( ctp )
-    suitable_classes = []
-    not_suitable_classes = []
-    for ii, gc in enumerate(GOLIATH_CLASSES):
-        if ii in [2,4,5,6,7,10,11,13,14,15,16,19,20,21]:
-            suitable_classes.append(gc)
-        else:
-            not_suitable_classes.append(gc)
+    print( class_template )
+    
+    if class_template:
+        classes_to_select = class_templates.get(class_template)
+    else:
+        classes_to_select = ctp
+
     return {
-        # 'classes': GOLIATH_CLASSES,
-        # 'palette': GOLIATH_PALETTE
-        'suitable_classes': suitable_classes,
-        'not_suitable_classes': not_suitable_classes
+        'classes_to_select': classes_to_select
     }    
 
 @router.websocket("/sapiens-seg-stream")

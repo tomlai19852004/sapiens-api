@@ -725,3 +725,60 @@ COCO_WHOLEBODY_SKELETON_INFO = {
     63: dict(link=(130, 131), id=63, color=[0, 255, 0]),
     64: dict(link=(131, 132), id=64, color=[0, 255, 0])
 }
+
+skin_classes = [
+    "Face_Neck",
+    "Left_Foot",
+    "Left_Hand",
+    "Left_Lower_Arm",
+    "Left_Lower_Leg",
+    "Left_Upper_Arm",
+    "Left_Upper_Leg",
+    "Right_Foot",
+    "Right_Hand",
+    "Right_Lower_Arm",
+    "Right_Lower_Leg",
+    "Right_Upper_Arm",
+    "Right_Upper_Leg",
+    "Torso"
+]
+
+people_classes = [
+    "Apparel",
+    "Eyeglass_Frame",
+    "Eyeglass_Lenses",
+    "Face_Neck",
+    "Hair",
+    "Headset",
+    "Left_Foot",
+    "Left_Hand",
+    "Left_Lower_Arm",
+    "Left_Lower_Leg",
+    "Left_Shoe",
+    "Left_Sock",
+    "Left_Upper_Arm",
+    "Left_Upper_Leg",
+    "Lower_Clothing",
+    "Lower_Spandex",
+    "Right_Foot",
+    "Right_Hand",
+    "Right_Lower_Arm",
+    "Right_Lower_Leg",
+    "Right_Shoe",
+    "Right_Sock",
+    "Right_Upper_Arm",
+    "Right_Upper_Leg",
+    "Torso",
+    "Upper_Clothing",
+    "Visible_Badge",
+    "Lower_Lip",
+    "Upper_Lip",
+    "Lower_Teeth",
+    "Upper_Teeth",
+    "Tongue",
+]
+
+class_templates = {
+    'skin_classes': skin_classes,
+    'people_classes': people_classes
+}
